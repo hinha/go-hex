@@ -26,10 +26,11 @@ func UserInit(conn *redis.Client) user.Caching {
 }
 
 func (uc *userCache) Save(user *model.User) error {
-	user.Password = "" // no sensitive data allowed to be saved in cache
+
 	data, _ := json.Marshal(user)
 	key := fmt.Sprintf(keyRedisUser, user.ID)
 	err := uc.connection.Set(key, data, time.Duration(expireRedisKey)).Err()
+	user.Password = "" // no sensitive data allowed to be saved in cache
 	return err
 }
 

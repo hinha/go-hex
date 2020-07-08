@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/sha256"
 	"github.com/sirupsen/logrus"
 	"os"
 	"testHEX/internal/glue/routing"
@@ -44,9 +43,7 @@ func main() {
 
 	usecase := user.InitializeDomain(database, caching, repo)
 
-	hash := sha256.New()
-
-	handler := rest.HandleUser(usecase, hash)
+	handler := rest.HandleUser(usecase)
 	router := routing.UserInit(handler).Routers()
 	servant := routers.Initialize(":9000", router, domain)
 	if testInit {

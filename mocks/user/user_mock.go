@@ -57,6 +57,18 @@ func (mr *MockPersistenceMockRecorder) Find(email, password interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockPersistence)(nil).Find), email, password)
 }
 
+func (m *MockPersistence) FindByEmail(email string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByEmail", email)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (mr *MockPersistenceMockRecorder) FindByEmail(email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByEmail", reflect.TypeOf((*MockPersistence)(nil).FindByEmail), email)
+}
+
 type MockUsecase struct {
 	ctrl     *gomock.Controller
 	recorder *MockUsecaseMockRecorder
@@ -90,6 +102,7 @@ func (m *MockUsecase) EXPECT() *MockUsecaseMockRecorder {
 // Register mocks base method
 func (m *MockUsecase) Register(user *model.User) error {
 	m.ctrl.T.Helper()
+	user.Password = ""
 	ret := m.ctrl.Call(m, "Register", user)
 	ret0, _ := ret[0].(error)
 	return ret0

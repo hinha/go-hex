@@ -14,6 +14,11 @@ func (s *service) Register(user *model.User) error {
 		"usecase": "Register",
 	})
 
+	if err := s.userPersistence.FindByEmail(user.Email); err != nil {
+		log.WithField(state.LogType, "persistence findByEmail").Errorln(err)
+		return err
+	}
+
 	user, err := s.userPersistence.Create(user)
 	if err != nil {
 		log.WithField(state.LogType, "persistence").Errorln(err)

@@ -10,6 +10,7 @@ type Persistence interface {
 	Create(user *model.User) (*model.User, error)
 	FindByID(userID int64) (*model.User, error)
 	Find(email, password string) (*model.User, error)
+	FindByEmail(email string) error
 	//ChangePassword(newPassword string, user *model.User) error
 	//Delete(user *model.User) error
 }

@@ -18,6 +18,7 @@ require (
 	github.com/valyala/fasthttp v1.9.0
 	github.com/yuin/gopher-lua v0.0.0-20200603152657-dc2b0ca8b37e // indirect
 	go.mongodb.org/mongo-driver v1.3.4
+	golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5
 	google.golang.org/appengine v1.6.6 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )

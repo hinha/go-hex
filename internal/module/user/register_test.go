@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/golang/mock/gomock"
 	"testHEX/internal/constants/model"
 	mock_user "testHEX/mocks/user"
@@ -24,6 +25,21 @@ func Test_service_Register(t *testing.T) {
 		initMock func() (Persistence, Caching)
 	}{
 		{
+			name: "error persistence create email exists",
+			args: args{
+				user: &model.User{
+					Email:    "test@email.com",
+				},
+			},
+			wantErr: true,
+			initMock: func() (Persistence, Caching) {
+				mockedPersis := mock_user.NewMockPersistence(ctrl)
+				mockedPersis.EXPECT().FindByEmail("test@email.com").Return(errors.New("ERROR"))
+
+				return mockedPersis, nil
+			},
+		},
+		{
 			name: "error persistence create",
 			args: args{
 				user: &model.User{
@@ -35,6 +51,8 @@ func Test_service_Register(t *testing.T) {
 			wantErr: true,
 			initMock: func() (Persistence, Caching) {
 				mockedPersis := mock_user.NewMockPersistence(ctrl)
+				mockedPersis.EXPECT().FindByEmail("test@email.com").Return(nil)
+				fmt.Println("OKE")
 				mockedPersis.EXPECT().Create(&model.User{
 					Username: "test_username",
 					Email:    "test@email.com",
@@ -54,6 +72,7 @@ func Test_service_Register(t *testing.T) {
 			},
 			initMock: func() (Persistence, Caching) {
 				mockedPersis := mock_user.NewMockPersistence(ctrl)
+				mockedPersis.EXPECT().FindByEmail("test@email.com").Return(nil)
 				mockedPersis.EXPECT().Create(&model.User{
 					Username: "test_username",
 					Email:    "test@email.com",

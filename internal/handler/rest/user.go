@@ -2,17 +2,15 @@ package rest
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/savsgio/atreugo/v10"
-	"hash"
 	"net/http"
 	"testHEX/internal/constants/model"
+	"testHEX/internal/module/security"
 	"testHEX/internal/module/user"
 )
 
 type userService struct {
 	usecase user.Usecase
-	hash    hash.Hash
 }
 
 func (us *userService) CreateNewAccount(ctx *atreugo.RequestCtx) error {
@@ -39,16 +37,22 @@ func (us *userService) CreateNewAccount(ctx *atreugo.RequestCtx) error {
 		}, http.StatusBadRequest)
 	}
 
-	us.hash.Write([]byte(reqObj.Password))
-	reqObj.Password = fmt.Sprintf("%x", us.hash.Sum(nil))
+	password := security.GeneratePasswordHash([]byte(reqObj.Password))
 
 	err := us.usecase.Register(&model.User{
 		Username: reqObj.Username,
 		Email:    reqObj.Email,
-		Password: reqObj.Password,
+		Password: password,
 	})
+
 	if err != nil {
-		ctx.SetStatusCode(http.StatusInternalServerError)
+		ctx.SetStatusCode(http.StatusBadRequest)
+		return ctx.JSONResponse(atreugo.JSON{
+			"data": atreugo.JSON{
+				"message": "Email already exists",
+			},
+			"status": "fail",
+		})
 	}
 
 	return ctx.JSONResponse(atreugo.JSON{
@@ -80,9 +84,10 @@ func (us *userService) SignIn(ctx *atreugo.RequestCtx) error {
 		}, http.StatusBadRequest)
 	}
 
-	us.hash.Write([]byte(reqObj.Password))
-	password := fmt.Sprintf("%x", us.hash.Sum(nil))
-	_, err := us.usecase.Login(reqObj.Email, password)
+	//us.hash.Write([]byte(reqObj.Password))
+	//password := fmt.Sprintf("%x", us.hash.Sum(nil))
+	//password := security.GeneratePasswordHash([]byte(reqObj.Password))
+	_, err := us.usecase.Login(reqObj.Email, reqObj.Password)
 	if err != nil {
 		ctx.SetStatusCode(http.StatusBadRequest)
 		return ctx.JSONResponse(atreugo.JSON{
@@ -102,10 +107,9 @@ func (us *userService) SignIn(ctx *atreugo.RequestCtx) error {
 }
 
 // HandleUser is to initialize the rest handler for domain user
-func HandleUser(usecase user.Usecase, hash hash.Hash) user.Handler {
+func HandleUser(usecase user.Usecase) user.Handler {
 	return &userService{
 		usecase: usecase,
-		hash:    hash,
 	}
 }
 

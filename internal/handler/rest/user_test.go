@@ -2,7 +2,6 @@ package rest
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -39,14 +38,13 @@ func TestHandleUser(t *testing.T) {
 			},
 			want: &userService{
 				usecase: nil,
-				hash:    nil,
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := HandleUser(tt.args.usecase, tt.args.hash); !reflect.DeepEqual(got, tt.want) {
+			if got := HandleUser(tt.args.usecase); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("HandleUser() = %v, want %v", got, tt.want)
 			}
 		})
@@ -177,9 +175,12 @@ func Test_userService_CreateNewAccount(t *testing.T) {
 		{
 			name: "error usecase register",
 			want: atreugo.JSON{
-				"email": "clyf@email.com",
+				"data": atreugo.JSON{
+					"message": "Email already exists",
+				},
+				"status": "fail",
 			},
-			wantStatus: 201,
+			wantStatus: 400,
 			wantErr:    true,
 			initMock: func() (*atreugo.RequestCtx, user.Usecase) {
 				ctx := &atreugo.RequestCtx{
@@ -192,11 +193,18 @@ func Test_userService_CreateNewAccount(t *testing.T) {
 					"password": "nothashedpassword"
 				}`))
 
+				reqObj := new(model.RequestRegister)
+				body := ctx.Response.Body()
+
+				if json.Unmarshal(body, &reqObj) != nil {}
+
+
+				fmt.Println()
+				fmt.Println(reqObj.Password)
 				mockedUsecase := mockuser.NewMockUsecase(ctrl)
 				mockedUsecase.EXPECT().Register(&model.User{
 					Username: "usertest",
 					Email:    "clyf@email.com",
-					Password: "ae7bc8bd67f4f5c6a911373677ec56f95246288f1130c62048703be38397bda7",
 				}).Return(errors.New("ERROR"))
 
 				return ctx, mockedUsecase
@@ -205,9 +213,12 @@ func Test_userService_CreateNewAccount(t *testing.T) {
 		{
 			name: "success",
 			want: atreugo.JSON{
-				"email": "clyf@email.com",
+				"data": atreugo.JSON{
+					"message": "Email already exists",
+				},
+				"status": "fail",
 			},
-			wantStatus: 201,
+			wantStatus: 400,
 			wantErr:    true,
 			initMock: func() (*atreugo.RequestCtx, user.Usecase) {
 				ctx := &atreugo.RequestCtx{
@@ -224,7 +235,6 @@ func Test_userService_CreateNewAccount(t *testing.T) {
 				mockedUsecase.EXPECT().Register(&model.User{
 					Username: "usertest",
 					Email:    "clyf@email.com",
-					Password: "ae7bc8bd67f4f5c6a911373677ec56f95246288f1130c62048703be38397bda7",
 				}).Return(errors.New("ERROR"))
 
 				return ctx, mockedUsecase
@@ -236,7 +246,6 @@ func Test_userService_CreateNewAccount(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, usecase := tt.initMock()
 			us := &userService{
-				hash:    sha256.New(),
 				usecase: usecase,
 			}
 
@@ -250,7 +259,7 @@ func Test_userService_CreateNewAccount(t *testing.T) {
 			}
 			tt.want = string(jsonString)
 			got := string(ctx.Response.Body())
-
+			//fmt.Println(got)
 			if got != tt.want {
 				t.Errorf("Response.Body() = %v, want %v", got, tt.want)
 			}

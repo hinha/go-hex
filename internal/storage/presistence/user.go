@@ -2,13 +2,14 @@ package presistence
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"math/rand"
 	"strconv"
 	"testHEX/internal/constants/model"
 	"testHEX/internal/constants/state"
+	"testHEX/internal/module/security"
 	"testHEX/internal/module/user"
 	"time"
 )
@@ -57,13 +58,33 @@ func (u userPersistence) Find(email, password string) (*model.User, error) {
 	defer cancel()
 
 	users := new(model.User)
-	fmt.Println(password)
-	filter := bson.M{"email": email, "password": password, "status":   state.UserActiveAccount}
+
+	filter := bson.M{"email": email,"status":   state.UserActiveAccount}
 	err := u.db.Collection(TABLE).FindOne(ctx, filter).Decode(users)
 	if err != nil {
 		return nil, err
 	}
+
+	valid := security.PasswordCompare([]byte(password), []byte(users.Password))
+	if valid != nil {
+		return nil, errors.New("LOGIN FAILED")
+	}
 	return users, nil
+}
+
+func (u userPersistence) FindByEmail(email string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
+	defer cancel()
+
+	users := new(model.User)
+
+	filter := bson.M{"email": email}
+	err := u.db.Collection(TABLE).FindOne(ctx, filter).Decode(users)
+
+	if err == nil {
+		return errors.New("USER EXISTS")
+	}
+	return nil
 }
 
 // UserInit is to init the user persistence that contains data accounts

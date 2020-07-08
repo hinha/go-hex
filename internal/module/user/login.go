@@ -28,6 +28,8 @@ func (s *service) Login(email, password string) (string, error) {
 		return "0", err
 	}
 
+	
+	
 	//save to caching
 	err = s.userCaching.Save(user)
 	if err != nil {
