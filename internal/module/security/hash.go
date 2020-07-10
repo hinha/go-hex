@@ -18,7 +18,7 @@ func hashTo32Bytes(input string) []byte {
 
 }
 
-func encryptString(plainText string, keyString string) (cipherTextString string, err error) {
+func EncryptString(plainText string, keyString string) (cipherTextString string, err error) {
 
 	key := hashTo32Bytes(keyString)
 	encrypted, err := encryptAES(key, []byte(plainText))
@@ -57,7 +57,7 @@ func encryptAES(key, data []byte) ([]byte, error) {
 // Takes two strings, cryptoText and keyString.
 // cryptoText is the text to be decrypted and the keyString is the key to use for the decryption.
 // The function will output the resulting plain text string with an error variable.
-func decryptString(cryptoText string, keyString string) (plainTextString string, err error) {
+func DecryptString(cryptoText string, keyString string) (plainTextString string, err error) {
 
 	encrypted, err := base64.URLEncoding.DecodeString(cryptoText)
 	if err != nil {

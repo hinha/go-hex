@@ -43,12 +43,14 @@ func (mr *MockPersistenceMockRecorder) Create(user interface{}) *gomock.Call {
 }
 
 // Find mocks base method
-func (m *MockPersistence) Find(email, password string) (*model.User, error) {
+func (m *MockPersistence) Find(email, password string) (*model.User, *model.Token, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Find", email, password)
 	ret0, _ := ret[0].(*model.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(*model.Token)
+	ret2, _ := ret[2].(error)
+
+	return ret0, ret1, ret2
 }
 
 // Find indicates an expected call of Find
@@ -74,7 +76,7 @@ type MockUsecase struct {
 	recorder *MockUsecaseMockRecorder
 }
 
-func (m *MockUsecase) Login(email, password string) (string, error) {
+func (m *MockUsecase) Login(email, password string) (string, string, error) {
 	panic("implement me")
 }
 
@@ -175,4 +177,52 @@ func (m *MockCaching) Delete(userID string) error {
 func (mr *MockCachingMockRecorder) Delete(ctx, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCaching)(nil).Delete), userID)
+}
+
+
+// SaveToken mocks base method
+func (m *MockCaching) SaveToken(token *model.Token, user *model.User) error {
+	m.ctrl.T.Helper()
+
+	token.UniqueToken = "TGrGeaK5iXSFa_GSyeBtIVdpHBHiofg3lRTmUSVgK-alepTHC-25aFInYg=="
+	token.TimeAt = "1594374962"
+
+	ret := m.ctrl.Call(m, "SaveToken", token, user)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveToken indicates an expected call of Save
+func (mr *MockCachingMockRecorder) SaveToken(token, user interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveToken", reflect.TypeOf((*MockCaching)(nil).SaveToken), token, user)
+}
+
+// Get mocks base method
+func (m *MockCaching) GetToken(userID string) (*model.Token, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetToken", userID)
+	ret0, _ := ret[0].(*model.Token)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get
+func (mr *MockCachingMockRecorder) GetToken(userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetToken", reflect.TypeOf((*MockCaching)(nil).GetToken), userID)
+}
+
+// Delete mocks base method
+func (m *MockCaching) DeleteToken(userID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteToken", userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete
+func (mr *MockCachingMockRecorder) DeleteToken(ctx, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteToken", reflect.TypeOf((*MockCaching)(nil).DeleteToken), userID)
 }

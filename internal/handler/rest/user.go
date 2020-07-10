@@ -87,7 +87,7 @@ func (us *userService) SignIn(ctx *atreugo.RequestCtx) error {
 	//us.hash.Write([]byte(reqObj.Password))
 	//password := fmt.Sprintf("%x", us.hash.Sum(nil))
 	//password := security.GeneratePasswordHash([]byte(reqObj.Password))
-	_, err := us.usecase.Login(reqObj.Email, reqObj.Password)
+	_, token, err := us.usecase.Login(reqObj.Email, reqObj.Password)
 	if err != nil {
 		ctx.SetStatusCode(http.StatusBadRequest)
 		return ctx.JSONResponse(atreugo.JSON{
@@ -102,6 +102,7 @@ func (us *userService) SignIn(ctx *atreugo.RequestCtx) error {
 		"status": "success",
 		"data": atreugo.JSON{
 			"message": "Successfully user",
+			"token": token,
 		},
 	}, http.StatusOK)
 }

@@ -3,6 +3,7 @@ package presistence
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"math/rand"
@@ -53,23 +54,31 @@ func (u userPersistence) FindByID(userID int64) (*model.User, error) {
 	panic("implement me")
 }
 
-func (u userPersistence) Find(email, password string) (*model.User, error) {
+func (u userPersistence) Find(email, password string) (*model.User, *model.Token, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
 	users := new(model.User)
+	token := new(model.Token)
 
 	filter := bson.M{"email": email,"status":   state.UserActiveAccount}
 	err := u.db.Collection(TABLE).FindOne(ctx, filter).Decode(users)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	valid := security.PasswordCompare([]byte(password), []byte(users.Password))
 	if valid != nil {
-		return nil, errors.New("LOGIN FAILED")
+		return nil, nil, errors.New("LOGIN FAILED")
 	}
-	return users, nil
+
+	times := strconv.Itoa(int(time.Now().Unix()))
+	yu := fmt.Sprintf("%s:%s:%s", times, users.ID, users.Email)
+	enc, _ := security.EncryptString(yu, "ABCDEFG")
+	token.UniqueToken = enc
+	token.TimeAt = times
+
+	return users, token, nil
 }
 
 func (u userPersistence) FindByEmail(email string) error {

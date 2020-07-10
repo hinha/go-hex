@@ -9,7 +9,7 @@ import (
 type Persistence interface {
 	Create(user *model.User) (*model.User, error)
 	FindByID(userID int64) (*model.User, error)
-	Find(email, password string) (*model.User, error)
+	Find(email, password string) (*model.User, *model.Token, error)
 	FindByEmail(email string) error
 	//ChangePassword(newPassword string, user *model.User) error
 	//Delete(user *model.User) error
@@ -20,6 +20,9 @@ type Caching interface {
 	Save(user *model.User) error
 	Get(userID string) (*model.User, error)
 	Delete(userID string) error
+	SaveToken(token *model.Token, user *model.User) error
+	GetToken(userID string) (*model.Token, error)
+	DeleteToken(userID string) error
 }
 
 type Repository interface {
@@ -33,7 +36,7 @@ type service struct {
 }
 
 type Usecase interface {
-	Login(email, password string) (string, error)
+	Login(email, password string) (string, string, error)
 	//Profile(userID int64) (*model.User, error)
 	Register(user *model.User) error
 }

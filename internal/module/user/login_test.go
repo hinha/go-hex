@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"github.com/golang/mock/gomock"
 	"testHEX/internal/constants/model"
 	mock_user "testHEX/mocks/user"
@@ -32,7 +33,7 @@ func Test_service_Login(t *testing.T) {
 			wantErr: true,
 			initMock: func() (Persistence, Caching) {
 				mockedPersis := mock_user.NewMockPersistence(ctrl)
-				mockedPersis.EXPECT().Find("test@email.com", "hashedpassword").Return(nil, errors.New("ERROR"))
+				mockedPersis.EXPECT().Find("test@email.com", "hashedpassword").Return(nil, nil, errors.New("ERROR"))
 				return mockedPersis, nil
 			},
 			want: "0",
@@ -52,14 +53,28 @@ func Test_service_Login(t *testing.T) {
 					Username: "test",
 					Email:    "test@email.com",
 					Password: "hashedpassword",
+				}, &model.Token{
+					UniqueToken: "TGrGeaK5iXSFa_GSyeBtIVdpHBHiofg3lRTmUSVgK-alepTHC-25aFInYg==",
+					TimeAt: "1594374962",
 				}, nil)
 				mockedCache := mock_user.NewMockCaching(ctrl)
+				mockedCache.EXPECT().SaveToken(&model.Token{
+					UniqueToken: "TGrGeaK5iXSFa_GSyeBtIVdpHBHiofg3lRTmUSVgK-alepTHC-25aFInYg==",
+					TimeAt: "1594374962",
+				},&model.User{
+					ID:       "1",
+					Username: "test",
+					Email:    "test@email.com",
+					Password: "hashedpassword",
+				}).Return(errors.New("ERROR"))
+
 				mockedCache.EXPECT().Save(&model.User{
 					ID:       "1",
 					Username: "test",
 					Email:    "test@email.com",
 					Password: "hashedpassword",
 				}).Return(errors.New("ERROR"))
+				fmt.Println(mockedCache, mockedPersis)
 				return mockedPersis, mockedCache
 			},
 		},
@@ -77,8 +92,21 @@ func Test_service_Login(t *testing.T) {
 					Username: "test",
 					Email:    "test@email.com",
 					Password: "hashedpassword",
+				}, &model.Token{
+					UniqueToken: "TGrGeaK5iXSFa_GSyeBtIVdpHBHiofg3lRTmUSVgK-alepTHC-25aFInYg==",
+					TimeAt: "1594374962",
 				}, nil)
 				mockedCache := mock_user.NewMockCaching(ctrl)
+				mockedCache.EXPECT().SaveToken(&model.Token{
+					UniqueToken: "TGrGeaK5iXSFa_GSyeBtIVdpHBHiofg3lRTmUSVgK-alepTHC-25aFInYg==",
+					TimeAt: "1594374962",
+				},&model.User{
+					ID:       "1",
+					Username: "test",
+					Email:    "test@email.com",
+					Password: "hashedpassword",
+				}).Return(nil)
+
 				mockedCache.EXPECT().Save(&model.User{
 					ID:       "1",
 					Username: "test",
@@ -97,7 +125,9 @@ func Test_service_Login(t *testing.T) {
 				userPersistence: p,
 				userCaching:     c,
 			}
-			got, err := s.Login(tt.args.email, tt.args.password)
+			got, _, err := s.Login(tt.args.email, tt.args.password)
+			fmt.Println("got: ", got)
+			fmt.Println("wantErr",  tt.want)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("service.Login() error = %v, wantErr %v", err, tt.wantErr)
 				return

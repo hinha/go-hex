@@ -11,6 +11,11 @@ type User struct {
 	Status    int8   `db:"status" json:"status"`
 }
 
+type Token struct {
+	UniqueToken string `db:"unique_token" json:"unique_token"`
+	TimeAt		string `db:"time_at" json:"time_at"`
+}
+
 // RequestRegister for error handler
 type RequestRegister struct {
 	Email    string `json:"email" binding:"required"`
